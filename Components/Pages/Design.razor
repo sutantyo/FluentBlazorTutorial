@@ -1,0 +1,122 @@
+@page "/design"
+
+@using Microsoft.FluentUI.AspNetCore.Components.DesignTokens
+@inject BaseLayerLuminance BaseLayerLuminance
+@inject AccentBaseColor AccentBaseColor
+@inject NeutralBaseColor NeutralBaseColor
+@inject NeutralLayer1 NeutralLayer1
+
+<div style="padding: 20px;">
+  <FluentButton OnClick="ToggleDarkLightMode">
+    Toggle Dark/Light Mode
+  </FluentButton>
+
+  <div style="margin-top: 20px;">
+    <h3>Customize Colors</h3>
+
+    <div style="display: flex; align-items: center; gap: 10px; margin-top: 10px;">
+      <label>Accent Base Color</label>
+      <FluentTextField Value="@accentColorHex" ValueChanged="ChangeAccentBaseColor" Placeholder="#EF6B3E"/>
+
+      <!-- Color Preview Box -->
+      <div style="width: 40px; height: 40px; border: 1px solid #ccc; background-color: @(GetLuminanceColor(lightModeLuminance));">
+      </div>
+      <div style="width: 40px; height: 40px; border: 1px solid #ccc; background-color: @(accentColorHex);">
+      </div>
+      <div style="width: 40px; height: 40px; border: 1px solid #ccc; background-color: @(GetLuminanceColor(darkModeLuminance));">
+      </div>
+    </div>
+
+    <!-- Luminance Adjustment and Preview Boxes -->
+    <div style="margin-top: 20px;">
+      <h4>Set Luminance Values</h4>
+      <div style="display: flex; gap: 20px;">
+        <!-- Light Mode Luminance Input and Preview Box -->
+        <div style="text-align: center;">
+          <label>Light Mode Luminance</label>
+          <FluentTextField Value="@lightModeLuminance.ToString()" ValueChanged="ChangeLightModeLuminance" Placeholder="0.95"/>
+        </div>
+
+        <!-- Dark Mode Luminance Input and Preview Box -->
+        <div style="text-align: center;">
+          <label>Dark Mode Luminance</label>
+          <FluentTextField Value="@darkModeLuminance.ToString()" ValueChanged="ChangeDarkModeLuminance" Placeholder="0.12"/>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+@code {
+  private string accentColorHex = "#FF7300"; // Default color value
+  private string neutralBaseColorHex = "#DED4CA"; // Default color value
+  private string accentFillRestHex = "#FF9C40"; // Default color value
+  private bool isDarkMode = true;
+
+  private double lightModeLuminance = 0.95;
+  private double darkModeLuminance = 0.12;
+
+  protected override async Task OnAfterRenderAsync(bool firstRender)
+  {
+    if (firstRender)
+    {
+      // Apply initial dark mode luminance
+      await BaseLayerLuminance.WithDefault((float)darkModeLuminance);
+      await AccentBaseColor.WithDefault(accentColorHex.ToSwatch());
+      await NeutralBaseColor.WithDefault(neutralBaseColorHex.ToSwatch());
+      StateHasChanged();
+    }
+  }  
+  
+  private async Task ChangeAccentBaseColor(string newColor)
+  {
+    accentColorHex = newColor;
+    await AccentBaseColor.WithDefault(newColor.ToSwatch());
+    StateHasChanged();
+  }
+
+  private async Task ChangeLightModeLuminance(string newLuminance)
+  {
+    if (double.TryParse(newLuminance, out double value) && value >= 0 && value <= 1)
+    {
+      lightModeLuminance = value;
+// Update luminance if currently in light mode
+      if (!isDarkMode)
+      {
+        await BaseLayerLuminance.WithDefault((float)lightModeLuminance);
+        StateHasChanged();
+      }
+    }
+  }
+
+  private async Task ChangeDarkModeLuminance(string newLuminance)
+  {
+    if (double.TryParse(newLuminance, out double value) && value >= 0 && value <= 1)
+    {
+      darkModeLuminance = value;
+// Update luminance if currently in dark mode
+      if (isDarkMode)
+      {
+        await BaseLayerLuminance.WithDefault((float)darkModeLuminance);
+        StateHasChanged();
+      }
+    }
+  }
+
+  private string GetLuminanceColor(double luminance)
+  {
+    return luminance >= 0.5 ? LightenColor(accentColorHex) : DarkenColor(accentColorHex);
+  }
+
+  private string LightenColor(string hexColor) => "#FFB185";
+  private string DarkenColor(string hexColor) => "#D45D2C";
+
+  private async Task ToggleDarkLightMode()
+  {
+    isDarkMode = !isDarkMode;
+    float luminance = isDarkMode ? (float)darkModeLuminance : (float)lightModeLuminance;
+    await BaseLayerLuminance.WithDefault(luminance);
+    StateHasChanged();
+  }
+
+}
