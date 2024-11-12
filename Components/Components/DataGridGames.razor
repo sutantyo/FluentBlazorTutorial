@@ -1,0 +1,27 @@
+﻿@using BasicTutorial.Components.Models
+<h3>DataGrid2</h3>
+
+<FluentDataGrid Items="@(Games ?? games)">
+    <PropertyColumn Property="@(p => p.GameId)" Sortable="true" />
+    <PropertyColumn Property="@(p => p.Name)" Sortable="true" />
+    <PropertyColumn Property="@(p => p.Rating)" Sortable="true" />
+</FluentDataGrid>
+
+@code {
+    
+    [Parameter] public IQueryable<Game> Games { get; set; }
+
+    static Random random = new Random();
+
+    IQueryable<Game> games = new[]
+    {
+            new Game(1, "A", random.Next(1, 101)),
+            new Game(1, "B", random.Next(1, 101)),
+            new Game(1, "C", random.Next(1, 101)),
+            new Game(1, "D", random.Next(1, 101))
+    }.AsQueryable();
+
+    protected override void OnInitialized(){
+        
+    }
+}

@@ -1,0 +1,92 @@
+﻿@page "/DragDrop"
+@using System.Diagnostics
+@using BasicTutorial.Components.Components
+@using BasicTutorial.Components.Models
+
+<h3>DragDrop</h3>
+
+<FluentDragContainer TItem="RenderFragment">
+    <div style="display: flex; flex-wrap:  wrap;">
+        @foreach (var block in Blocks)
+        {
+            <FluentDropZone Draggable="true" Droppable="true"
+                            OnDragStart="@((eventArgs) => OnDragStart(eventArgs, block.Key))"
+                            OnDropEnd="@((eventArgs) => OnDrop(eventArgs, block.Key))">
+                    <div style="background-color: beige; width: 400px; height: 400px; overflow: auto; margin: 10px;">
+                        <h4>Block @block.Key</h4>
+                        <p>Title @block.Key</p>
+                        @if (block.Value != null)
+                        {
+                            @block.Value
+                        }
+                        else
+                        {
+                            <p>Drop an item here</p>
+                        }
+                    </div>
+            </FluentDropZone>
+        }
+    </div>
+</FluentDragContainer>
+
+@code {
+
+    // Dictionary to store each block and its components as RenderFragments
+    private Dictionary<int, RenderFragment?> Blocks = new();
+
+    private int _nextBlockId = 1;
+
+    readonly IQueryable<Game> _games = new[]
+    {
+            new Game(1, "X", 100),
+            new Game(1, "Y", 50),
+            new Game(1, "Z", 50)
+    }.AsQueryable();
+
+    protected override void OnInitialized()
+    {
+        // Initialize the blocks with DataGridGames and DataGridPerson components
+        Blocks[_nextBlockId++] =
+                builder => {
+                    builder.OpenComponent(0, typeof(DataGridGames));
+                    builder.CloseComponent();
+                };
+
+        Blocks[_nextBlockId++] =
+                builder => {
+                    builder.OpenComponent(0, typeof(DataGridPerson));
+                    builder.CloseComponent();
+                };
+        Blocks[_nextBlockId++] = null;
+        Blocks[_nextBlockId++] = null;
+        Blocks[_nextBlockId++] = null;
+        Blocks[_nextBlockId++] = null;
+    }
+
+    // Drag-and-drop handling
+    private RenderFragment? _draggedFragment;
+    private int? _sourceBlockId;
+
+    void OnDragStart(FluentDragEventArgs<RenderFragment> eventArgs, int sourceBlockId)
+    {
+        Console.WriteLine("Drag started");
+        _draggedFragment = Blocks[sourceBlockId];
+        _sourceBlockId = sourceBlockId;
+    }
+
+    //void OnDrop(RenderFragment fragment, int targetBlockId)
+    void OnDrop(FluentDragEventArgs<RenderFragment> eventArgs, int targetBlockId)
+    {
+        Console.WriteLine("Drag ended");
+            if (_sourceBlockId != targetBlockId)
+            {
+                Blocks[_sourceBlockId.Value] = null;
+                Blocks[targetBlockId] = _draggedFragment;
+            }
+
+            // Reset after drop
+            _draggedFragment = null;
+            _sourceBlockId = null;
+        StateHasChanged();
+    }
+}
