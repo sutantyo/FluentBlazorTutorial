@@ -17,7 +17,7 @@
                         <p>Title @block.Key</p>
                         @if (block.Value != null)
                         {
-                            @block.Value
+                            <div @key="1">@block.Value</div>
                         }
                         else
                         {
@@ -49,12 +49,14 @@
         Blocks[_nextBlockId++] =
                 builder => {
                     builder.OpenComponent(0, typeof(DataGridGames));
+                    builder.SetKey("DataGridGames_Key");
                     builder.CloseComponent();
                 };
 
         Blocks[_nextBlockId++] =
                 builder => {
                     builder.OpenComponent(0, typeof(DataGridPerson));
+                    builder.SetKey("DataGridPerson_Key");
                     builder.CloseComponent();
                 };
         Blocks[_nextBlockId++] = null;
@@ -87,6 +89,5 @@
             // Reset after drop
             _draggedFragment = null;
             _sourceBlockId = null;
-        StateHasChanged();
     }
 }

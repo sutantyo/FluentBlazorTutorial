@@ -1,7 +1,8 @@
 ﻿@using BasicTutorial.Components.Models
 <h3>DataGrid2</h3>
+<FluentButton OnClick="@AddGame">Add Game</FluentButton>
 
-<FluentDataGrid Items="@(Games ?? games)">
+<FluentDataGrid Items="@(Games ?? games.AsQueryable())">
     <PropertyColumn Property="@(p => p.GameId)" Sortable="true" />
     <PropertyColumn Property="@(p => p.Name)" Sortable="true" />
     <PropertyColumn Property="@(p => p.Rating)" Sortable="true" />
@@ -13,15 +14,21 @@
 
     static Random random = new Random();
 
-    IQueryable<Game> games = new[]
+    List<Game> games = new List<Game>
     {
-            new Game(1, "A", random.Next(1, 101)),
-            new Game(1, "B", random.Next(1, 101)),
-            new Game(1, "C", random.Next(1, 101)),
-            new Game(1, "D", random.Next(1, 101))
-    }.AsQueryable();
+      new Game(1, "A", random.Next(1, 101)),
+      new Game(1, "B", random.Next(1, 101)),
+      new Game(1, "C", random.Next(1, 101)),
+      new Game(1, "D", random.Next(1, 101))
+    };
 
-    protected override void OnInitialized(){
+    protected override void OnInitialized()
+    {
+      Console.WriteLine("Rendering DataGridGames");
         
+    }
+    
+    private void AddGame(){
+      games.Add(new Game(1, "E", random.Next(1, 101)));
     }
 }
