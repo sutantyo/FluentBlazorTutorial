@@ -1,0 +1,26 @@
+﻿@inject IJSRuntime JS
+
+<div id="@Name" class="name-tag">
+    <p>
+        @Name <FluentButton OnClick="AddTag">B</FluentButton>
+    </p>
+</div>
+
+@code {
+
+    [Parameter]
+    public string? Name { get; set; }
+
+    private string NameClass { get; set; } = "";
+
+    private void AddTag()
+    {
+        Name += "_tag";
+
+    }
+
+    protected override void OnInitialized()
+    {
+        Console.WriteLine("Rendered NameTag");
+    }
+}

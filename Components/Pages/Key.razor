@@ -1,0 +1,65 @@
+﻿@page "/key"
+@using BasicTutorial.Components.Components
+@inject IJSRuntime JSRuntime
+
+<PageTitle>People</PageTitle>
+
+<h1>Key Example</h1>
+
+<div id="nameTags">
+    @foreach (var name in names)
+    {
+        <NameTag @key="name" Name="@name" />
+    }
+</div>
+
+<FluentButton OnClick="@Randomize">Randomize</FluentButton>
+
+@code {
+    public List<string> names = new() { "Alice", "Bob", "Charlie", "David", "Eve", "Frank", "Grace", "Heidi" };
+    private DotNetObjectReference<Key>? dotNetHelper;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            dotNetHelper = DotNetObjectReference.Create(this);
+
+            // Initialize each NameTag as draggable
+            foreach (var name in names)
+            {
+                await JSRuntime.InvokeVoidAsync("dragDropHelper.initializeDraggable", name);
+            }
+
+            // Initialize the parent container as the drop zone
+            await JSRuntime.InvokeVoidAsync("dragDropHelper.initializeDropZones", "nameTags", dotNetHelper);
+        }
+    }
+
+    [JSInvokable]
+    public async Task OnItemDropped(string sourceId, string targetId)
+    {
+        var sourceIndex = names.IndexOf(sourceId);
+        var targetIndex = names.IndexOf(targetId);
+
+        if (sourceIndex >= 0 && targetIndex >= 0 && sourceIndex != targetIndex)
+        {
+            var item = names[sourceIndex];
+            names.RemoveAt(sourceIndex);
+            names.Insert(targetIndex, item);
+
+            // Invoke StateHasChanged on the UI thread
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    protected void Randomize()
+    {
+        names = names.OrderBy(x => Guid.NewGuid()).ToList();
+    }
+
+    public void Dispose()
+    {
+        dotNetHelper?.Dispose();
+    }
+}
